@@ -1,0 +1,4 @@
+meroboto
+========
+
+CoffeeScript Basic Robot

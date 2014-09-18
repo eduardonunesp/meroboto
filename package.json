@@ -16,9 +16,13 @@
     "coffee-script": "^1.8.0",
     "gulp": "^3.8.8",
     "gulp-coffee": "^2.2.0",
+    "gulp-mocha": "^1.1.0",
     "mocha": "^1.21.4"
   },
   "bugs": {
     "url": "https://github.com/eduardonunesp/meroboto/issues"
+  },
+  "dependencies": {
+    "node-schedule": "^0.1.13"
   }
 }

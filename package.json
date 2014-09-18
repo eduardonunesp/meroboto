@@ -1,17 +1,24 @@
 {
   "name": "meroboto",
   "version": "0.0.1",
-  "description": "",
-  "main": "index.js",
+  "description": "CoffeeScript Basic Robot",
+  "main": "lib/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Eduardo Nunes Pereira <eduardonunesp@gmail.com>",
-  "license": "BSD",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/eduardonunesp/meroboto.git"
+  },
   "devDependencies": {
     "coffee-script": "^1.8.0",
     "gulp": "^3.8.8",
     "gulp-coffee": "^2.2.0",
     "mocha": "^1.21.4"
+  },
+  "bugs": {
+    "url": "https://github.com/eduardonunesp/meroboto/issues"
   }
 }

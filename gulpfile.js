@@ -8,9 +8,8 @@ gulp.task('default', function() {
     .pipe(coffee({bare: true}).on('error', util.log))
     .pipe(gulp.dest('./lib/'));
 });
-
-gulp.task('test', function() {   
+    
+gulp.task('test', function() {
   gulp.src('test/test.js', {read: false})
     .pipe(mocha());
 });
-

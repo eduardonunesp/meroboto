@@ -3,14 +3,10 @@ util = require 'util'
 schedule = require 'node-schedule'
 
 module.exports =
-  Schedule : class Schedule
-    constructor: (@name, cronRule, fn) ->
-      @j = schedule.scheduleJob cronRule, ->
-        fn()
-
-  Action : class Action
+  Action : class Action extends EventEmitter
     constructor: (@name, @fn) ->
     execute: (args) ->
+      @emit 'action-executed', @
       @fn(args)
 
   Sensor : class Sensor extends EventEmitter
@@ -48,30 +44,45 @@ module.exports =
     do: (fn) ->
       fn()
 
-    waitEvent: (eventName, fn) ->
+    waitSensorEvent: (eventName, fn) ->
       for name, sensor of @sensors
         sensor.on eventName, (data) ->
           fn(data)
 
+    waitActionEvent: (actionName, fn) ->
+      for name, action of @actions
+        action.on actionName, (data) ->
+          fn(data)
+
     combine: (sensor, action) ->
-      @combines.push new Combine(sensor, action)
-      @addSensor(sensor)
-      @addAction(action)
+      combo = new Combine(sensor, action)
+      @combines.push combo
+      @__addSensor(sensor)
+      @__addAction(action)
+      @emit 'robot-combine'
+          , sensor:sensor
+          , action:action
+      return combo
 
-    addAction: (action) ->
+    disassociate: (combine) ->
+      @__removeAction(combine.action)
+      @__removeSensor(combine.sensor)
+      idx = @combines.indexOf combine
+      @combines.splice idx, 1
+      @emit 'robot-disassociate'
+          , sensor:combine.sensor
+          , action:combine.action
+
+    __addAction: (action) ->
       @actions[action.name] = action
-      @emit 'add-action', action
 
-    removeAction: (action) ->
+    __removeAction: (action) ->
       delete @actions[action.name]
-      @emit 'remove-action'
 
-    addSensor: (sensor) ->
+    __addSensor: (sensor) ->
       @sensors[sensor.name] = sensor
       sensor.start()
-      @emit 'add-sensor', sensor
 
-    removeSensor: (sensor) ->
-      delete @sensor[sensor.name]
+    __removeSensor: (sensor) ->
+      delete @sensors[sensor.name]
       sensor.stop()
-      @emit 'remove-sensor'

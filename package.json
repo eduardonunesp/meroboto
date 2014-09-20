@@ -22,8 +22,5 @@
   "bugs": {
     "url": "https://github.com/eduardonunesp/meroboto/issues"
   },
-  "homepage": "https://github.com/eduardonunesp/meroboto",
-  "dependencies": {
-    "node-schedule": "^0.1.13"
-  }
+  "homepage": "https://github.com/eduardonunesp/meroboto"
 }

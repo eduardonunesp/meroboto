@@ -1,6 +1,5 @@
 util = require 'util'
 {EventEmitter} = require 'events'
-schedule = require 'node-schedule'
 
 module.exports =
   Action : class Action extends EventEmitter
@@ -11,10 +10,12 @@ module.exports =
 
   Sensor : class Sensor extends EventEmitter
     constructor: (@name, @timeInterval, @fn) ->
+      @lock = false
 
     start: ->
       @intervalHandler = setInterval =>
-        @update()
+        if not @lock
+          @update()
       , @timeInterval
       @emit 'sensor-start', @
 

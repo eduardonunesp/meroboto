@@ -1,89 +1,125 @@
 util = require 'util'
+uuid = require 'uuid'
 {EventEmitter} = require 'events'
+{HashMap} = require 'hashmap'
 
 module.exports =
   Action : class Action extends EventEmitter
-    constructor: (@name, @fn) ->
+    constructor: (options) ->
+      {@name, @fn} = options; 
+      @name ?= uuid.v4(); @
+
     execute: (args) ->
       @emit 'action-executed', @
-      @fn(args)
+      @fn(args); @
+
+  Stack : class Stack extends EventEmitter
+    constructor: (options) ->
+      {@name} = options
+      @name ?= uuid.v4()
+      @actions = []; @
+
+    push: (actions) ->
+      if util.isArray actions
+        for action in actions
+          @actions.push(action)
+      else
+        @actions.push(actions)
+
+    execute: (args) ->
+      ret = null
+      for action in @actions
+        ret ?= args
+        ret = action.fn(ret);
+      return @
 
   Sensor : class Sensor extends EventEmitter
-    constructor: (@name, @timeInterval, @fn) ->
-      @lock = false
+    constructor: (options) ->
+      {@name, @timeInterval, @fn} = options
+      @name ?= uuid.v4()
+      @lock = false; @
 
     start: ->
       @intervalHandler = setInterval =>
         if not @lock
           @update()
       , @timeInterval
-      @emit 'sensor-start', @
+      @emit 'sensor-start', @; @
 
     stop: ->
       clearInterval(@intervalHandler);
-      @emit 'sensor-stop', @
+      @emit 'sensor-stop', @; @
 
     update: ->
-      @emit 'sensor-update', @
+      @emit 'sensor-update', @; @
 
   Combine : class Combine
-    constructor: (@sensor, @action) ->
-      @sensor.on 'sensor-update', (data) =>
-        @action.execute(data.fn())
+    constructor: (options) ->
+      {@sensor, @action, @stack} = options
+
+      if @action?
+        @sensor.on 'sensor-update', (data) =>
+          @action.execute(data.fn())
+
+      if @stack?
+        @sensor.on 'sensor-update', (data) =>
+          @stack.execute(data.fn())
 
   Robot : class Robot extends EventEmitter
-    constructor: (@name) ->
-      @sensors = {}
-      @actions = {}
-      @combines = []
+    constructor: (options = {}) ->
+      {@name} = options
+      @name ?= uuid.v4()
+      @combines = new HashMap(); @
 
     after: (timeInterval, fn) ->
       setTimeout =>
         fn(@)
-      , timeInterval
+      , timeInterval; @
 
     do: (fn) ->
-      fn()
+      fn(); @
 
-    waitSensorEvent: (eventName, fn) ->
+    watchSensor: (eventName, fn) ->
       for name, sensor of @sensors
         sensor.on eventName, (data) ->
           fn(data)
-
-    waitActionEvent: (actionName, fn) ->
+      return @
+    
+    watchAction: (actionName, fn) ->
       for name, action of @actions
         action.on actionName, (data) ->
           fn(data)
+      return @
 
-    combine: (sensor, action) ->
-      combo = new Combine(sensor, action)
-      @combines.push combo
-      @__addSensor(sensor)
-      @__addAction(action)
-      @emit 'robot-combine'
-          , sensor:sensor
-          , action:action
-      return combo
+    combine: (alias, combine) ->
+      combine.sensor.start()
+      @combines.set alias, combine
+      @emit 'robot-combine', combine, @; @
 
-    disassociate: (combine) ->
-      @__removeAction(combine.action)
-      @__removeSensor(combine.sensor)
-      idx = @combines.indexOf combine
-      @combines.splice idx, 1
-      @emit 'robot-disassociate'
-          , sensor:combine.sensor
-          , action:combine.action
+    uncombine: (alias) ->
+      combine = @combines.get alias
 
-    __addAction: (action) ->
-      @actions[action.name] = action
+      if not combine
+        throw Error 'Alias don\'t exists'
 
-    __removeAction: (action) ->
-      delete @actions[action.name]
+      combine.sensor.stop()
+      @combines.remove alias
+      @emit 'robot-uncombine', combine, @; @
 
-    __addSensor: (sensor) ->
-      @sensors[sensor.name] = sensor
-      sensor.start()
+    start: (alias) ->
+      combine = @combines.get alias
 
-    __removeSensor: (sensor) ->
-      delete @sensors[sensor.name]
-      sensor.stop()
+      if not combine
+        throw Error 'Alias don\'t exists'
+
+      combine.sensor.start()
+      @emit 'robot-start', combine, @; @
+
+    stop: (alias) ->
+      combine = @combines.get alias
+
+      if not combine
+        throw Error 'Alias don\'t exists'
+
+      combine.sensor.stop()
+      @emit 'robot-stop', @; @

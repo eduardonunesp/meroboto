@@ -11,5 +11,5 @@ gulp.task('default', function() {
     
 gulp.task('test', function() {
   gulp.src('test/test.js', {read: false})
-    .pipe(mocha());
+    .pipe(mocha({reporter: 'spec'}));
 });

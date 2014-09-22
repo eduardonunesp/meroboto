@@ -1,6 +1,6 @@
 {
   "name": "meroboto",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "CoffeeScript Basic Robot",
   "main": "lib/index.js",
   "scripts": {

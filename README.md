@@ -225,3 +225,7 @@ var robot = new meroboto.Robot({name: 'robot-2'})
 * 0.1.0 Initial release
 * 0.1.1 Fix bugs
 * 0.1.2 Better instatiation and Stacked actions
+* 0.1.3 
+	* New robot events and stack events
+	* A decent README
+	* Examples

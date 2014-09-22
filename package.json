@@ -1,6 +1,6 @@
 {
   "name": "meroboto",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "CoffeeScript Basic Robot",
   "main": "lib/index.js",
   "scripts": {
@@ -22,5 +22,9 @@
   "bugs": {
     "url": "https://github.com/eduardonunesp/meroboto/issues"
   },
-  "homepage": "https://github.com/eduardonunesp/meroboto"
+  "homepage": "https://github.com/eduardonunesp/meroboto",
+  "dependencies": {
+    "hashmap": "^1.1.0",
+    "uuid": "^1.4.1"
+  }
 }

@@ -14,7 +14,7 @@ module.exports =
       @fn(args); @
 
   Stack : class Stack extends EventEmitter
-    constructor: (options) ->
+    constructor: (options = {}) ->
       {@name} = options
       @name ?= uuid.v4()
       @actions = []; @
@@ -25,13 +25,14 @@ module.exports =
           @actions.push(action)
       else
         @actions.push(actions)
+      @emit 'stack-push', actions; @
 
     execute: (args) ->
       ret = null
       for action in @actions
         ret ?= args
         ret = action.fn(ret);
-      return @
+      @emit 'stack-execute', @actions; @
 
   Sensor : class Sensor extends EventEmitter
     constructor: (options) ->
@@ -74,10 +75,12 @@ module.exports =
     after: (timeInterval, fn) ->
       setTimeout =>
         fn(@)
-      , timeInterval; @
+      , timeInterval; 
+      @emit 'robot-after', @; @
 
     do: (fn) ->
-      fn(); @
+      fn(@); 
+      @emit 'robot-do', @; @
 
     watchSensor: (eventName, fn) ->
       for name, sensor of @sensors
@@ -85,9 +88,9 @@ module.exports =
           fn(data)
       return @
     
-    watchAction: (actionName, fn) ->
+    watchAction: (eventName, fn) ->
       for name, action of @actions
-        action.on actionName, (data) ->
+        action.on eventName, (data) ->
           fn(data)
       return @
 

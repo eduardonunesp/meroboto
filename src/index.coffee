@@ -9,7 +9,7 @@ module.exports =
       {@name, @fn} = options; 
       @name ?= uuid.v4(); @
 
-    execute: (args) ->
+    execute: (args, next=null) ->
       @emit 'action-executed', @
       @fn(args); @
 
@@ -17,22 +17,34 @@ module.exports =
     constructor: (options = {}) ->
       {@name} = options
       @name ?= uuid.v4()
-      @actions = []; @
+      @stack = []; @
 
     push: (actions) ->
       if util.isArray actions
         for action in actions
-          @actions.push(action)
+          @stack.push(action)
       else
-        @actions.push(actions)
+        @stack.push(actions)
       @emit 'stack-push', actions; @
 
+    call: (action, next) ->
+      action next
+
     execute: (args) ->
-      ret = null
-      for action in @actions
-        ret ?= args
-        ret = action.fn(ret);
-      @emit 'stack-execute', @actions; @
+      ret = null 
+      index = 0
+
+      done = () ->
+        console.log 'done'
+
+      next = (err) =>
+        console.log result
+        layer = @stack[index++];
+        @call(layer.fn(ret, next));
+
+      #ret ?= args
+      #ret = action.fn(ret, next);
+      @emit 'stack-execute', @stack; @
 
   Sensor : class Sensor extends EventEmitter
     constructor: (options) ->
@@ -60,7 +72,7 @@ module.exports =
 
       if @action?
         @sensor.on 'sensor-update', (data) =>
-          @action.execute(data.fn())
+          @action.execute(data.fn()) if not @action.lock
 
       if @stack?
         @sensor.on 'sensor-update', (data) =>

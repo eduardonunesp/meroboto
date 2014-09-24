@@ -49,8 +49,9 @@ describe('Meroboto Lab Test, BIP!', function(){
     it('Should test create action', function(done) {
       var action = new meroboto.Action({
         name: 'action1', 
-        fn: function(data) {
+        fn: function(data, next) {
           assert.equal(data, true);
+          if (next) next();
           done();
         }
       }).execute(true);
@@ -96,9 +97,9 @@ describe('Meroboto Lab Test, BIP!', function(){
 
       var action_1 = new meroboto.Action({
         name: 'action-1', 
-        fn: function(data) {
+        fn: function(data, next) {
           assert.equal(data, true);
-          return false;
+          next(false);
         }
       });
 
@@ -106,7 +107,7 @@ describe('Meroboto Lab Test, BIP!', function(){
         name: 'action-2', 
         fn: function(data) {
           assert.equal(data, false);
-          return 'robots'
+          next('robots');
         }
       });
 
@@ -115,6 +116,7 @@ describe('Meroboto Lab Test, BIP!', function(){
         fn: function(data) {
           assert.equal(data, 'robots');
           sensor.stop();
+          next();
           done();
         }
       });
@@ -129,7 +131,7 @@ describe('Meroboto Lab Test, BIP!', function(){
       var robot = new meroboto.Robot()
       .combine('combine-1', combine);
     });
-
+/*
     it('Should throw error if alias do not exists', function(done) {
       try {
         var robot = new meroboto.Robot()
@@ -260,6 +262,6 @@ describe('Meroboto Lab Test, BIP!', function(){
       .combine('combine-1', combine)
       .stop('combine-1')
       .uncombine('combine-1');
-    });
+    });*/
   })
 })
